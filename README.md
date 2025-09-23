@@ -99,8 +99,7 @@ The application demonstrates modern full-stack development practices, including 
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/kulsoomrasheed/recipesai.git
-cd recipesai
+git clone https://github.com/kulsoomrasheed/Recipe-Meal-Planner-App.git
 ```
 
 ### Step 2: Install Dependencies
@@ -109,24 +108,6 @@ npm install
 # or
 yarn install
 ```
-
-### Step 3: Environment Variables
-Create a `.env.local` file in the root directory:
-
-```env
-# Database
-MONGODB_URI=mongodb://localhost:27017/recipesai
-# or MongoDB Atlas connection string
-
-# JWT Secret
-JWT_SECRET=your-super-secret-jwt-key
-
-# API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
-```
-
-### Step 4: Database Setup
-Ensure MongoDB is running locally or configure your MongoDB Atlas connection.
 
 ### Step 5: Run the Application
 ```bash
@@ -278,13 +259,13 @@ npm run test:ci
 
 ## 👥 Contributors
 
-### Lead Developer
+### Developer
 **Kulsoom Rasheed** - Full-Stack Developer
 
 - 🌐 **Portfolio**: [kulsoomrasheed.netlify.app](https://kulsoomrasheed.netlify.app)
 - 💼 **LinkedIn**: [linkedin.com/in/kulsoom-rasheed-a5b5a0278](https://www.linkedin.com/in/kulsoom-rasheed-a5b5a0278/)
 - 🐙 **GitHub**: [github.com/kulsoomrasheed](https://github.com/kulsoomrasheed)
-- 📧 **Email**: rasheedamaan@gmail.com
+- 📧 **Email**: rasheedamaan111@gmail.com
 
 ### About the Developer
 Kulsoom is a passionate MERN stack developer with expertise in modern web technologies. She specializes in creating full-stack applications with beautiful UI/UX and robust backend logic. This project demonstrates her skills in React, Next.js, TypeScript, and AI integration.
