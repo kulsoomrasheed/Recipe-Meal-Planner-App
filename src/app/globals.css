@@ -5,7 +5,7 @@
   --foreground: #171717;
 }
 
-@theme inline {
+/* @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -17,10 +17,85 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
-body {
+/* body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+body {
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, #FFF7F7 0%, #FFFDF5 100%);
+  color: #333;
+}
+
+/* Layout: cap app height and enable auto scroll for overflow */
+.app-scroll {
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+/* Global interactive affordances */
+button, a, [role="button"], input[type="submit"], input[type="button"], .clickable {
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+/* Smooth subtle hover (won't override inline styles) */
+button:hover, a:hover, .clickable:hover {
+  filter: brightness(0.98);
+}
+
+.bg-bokeh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -20; /* above gradient but below content */
+  background-image:
+    radial-gradient(600px 400px at 20% 30%, rgba(72, 92, 255, 0.25), transparent 60%),
+    radial-gradient(500px 350px at 80% 20%, rgba(255, 120, 90, 0.2), transparent 60%),
+    radial-gradient(700px 500px at 50% 80%, rgba(155, 88, 235, 0.2), transparent 65%);
+  filter: blur(40px);
+  mix-blend-mode: screen;
+  opacity: 1;
+}
+
+.bg-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -30; /* put it behind bokeh */
+  background: linear-gradient(180deg,#0f172a 0%, #111025 45%, #0b0c13 100%);
+}
+
+/* small helper for logo gradient */
+.text-gradient-crypto {
+  background: linear-gradient(90deg,#2bd2ff 10%, #7b61ff 65%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-card {
+  background: rgba(14, 15, 22, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+
+/* small responsive tweaks for hero heading */
+.hero-h1 { line-height: 0.95; }
+@media (min-width: 1024px) {
+  .hero-h1 { font-size: 84px; }
+}
+@media (max-width: 1023px) {
+  .hero-h1 { font-size: 48px; }
+}
+.glass-card {
+  background: rgba(22, 22, 34, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

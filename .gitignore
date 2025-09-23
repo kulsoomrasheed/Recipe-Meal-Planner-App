@@ -13,6 +13,8 @@
 # testing
 /coverage
 
+/next.config.mjs
+
 # next.js
 /.next/
 /out/
