@@ -1,6 +1,8 @@
 "use client";
 
-export default function FormModal({ open, title, children, onClose }) {
+import { ReactNode } from "react";
+
+export default function FormModal({ open, title, children, onClose }: { open: boolean; title: string; children: ReactNode; onClose: () => void }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

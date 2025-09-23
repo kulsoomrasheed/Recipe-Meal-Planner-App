@@ -2,7 +2,7 @@
 
 import { ChefHat } from "lucide-react";
 
-export default function Logo({ size = 22 }) {
+export default function Logo({ size = 22 }: { size?: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="p-2 rounded-xl" style={{ background: "#FFE8EF" }}>

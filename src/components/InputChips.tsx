@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, KeyboardEvent, ChangeEvent } from "react";
 
-export default function InputChips({ value = [], onChange, placeholder = "Add ingredient and press Enter" }) {
+export default function InputChips({ value = [], onChange, placeholder = "Add ingredient and press Enter" }: { value?: string[]; onChange?: (v: string[]) => void; placeholder?: string }) {
   const [input, setInput] = useState("");
 
-  function handleKeyDown(e) {
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
       const v = input.trim();
@@ -16,7 +16,7 @@ export default function InputChips({ value = [], onChange, placeholder = "Add in
     }
   }
 
-  function removeChip(chip) {
+  function removeChip(chip: string) {
     onChange?.((value || []).filter((c) => c !== chip));
   }
 
@@ -32,7 +32,7 @@ export default function InputChips({ value = [], onChange, placeholder = "Add in
       </div>
       <input
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="w-full rounded-lg border p-3 outline-none"

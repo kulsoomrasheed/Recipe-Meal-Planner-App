@@ -3,7 +3,16 @@
 import { Pencil, Trash2 } from "lucide-react";
 import Spinner from "./Spinner";
 
-export default function RecipeCard({ recipe, onEdit, onDelete, busy = false }) {
+export interface RecipeLike {
+  _id?: string;
+  id?: string;
+  title: string;
+  ingredients?: Array<string | { name?: string }>;
+  steps?: string[] | string;
+  imageUrl?: string;
+}
+
+export default function RecipeCard({ recipe, onEdit, onDelete, busy = false }: { recipe: RecipeLike; onEdit?: (r: RecipeLike) => void; onDelete?: (r: RecipeLike) => void; busy?: boolean }) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
       {recipe.imageUrl ? (

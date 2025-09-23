@@ -1,50 +1,64 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
-import { getStoredToken } from "../lib/api";
-import { RecipesAPI } from "../lib/api";
+import { getStoredToken, RecipesAPI } from "../lib/api";
 
-// No localStorage caching for recipes; always rely on API
+export type RecipeItem = {
+  _id?: string;
+  id?: string;
+  title: string;
+  ingredients: Array<{ name: string }>;
+  steps: string[];
+  imageUrl?: string;
+  createdAt?: number;
+  updatedAt?: number;
+};
 
-export function createEmptyRecipe() {
+export function createEmptyRecipe(): RecipeItem {
   return {
     id: crypto.randomUUID(),
     title: "",
     ingredients: [],
-    steps: "",
+    steps: [],
     imageUrl: "",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
 }
 
-const RecipesContext = createContext(null);
+type RecipesContextValue = {
+  recipes: RecipeItem[];
+  loading: boolean;
+  addRecipe: (r: { title: string; ingredients: string[]; steps: string }) => Promise<void>;
+  updateRecipe: (id: string, u: { title: string; ingredients: string[]; steps: string }) => Promise<void>;
+  deleteRecipe: (id: string) => Promise<void>;
+  refetch: () => Promise<void>;
+};
 
-export function RecipesProvider({ children }) {
-  const [recipes, setRecipes] = useState([]);
+const RecipesContext = createContext<RecipesContextValue | null>(null);
+
+export function RecipesProvider({ children }: { children: ReactNode }) {
+  const [recipes, setRecipes] = useState<RecipeItem[]>([]);
   const [loading, setLoading] = useState(false);
   const isFetchingRef = useRef(false);
   const { user } = useAuth();
 
   const refetch = useCallback(async () => {
     if (isFetchingRef.current) return;
-    // Require authenticated user and token before fetching
     if (!user || !getStoredToken()) return;
     isFetchingRef.current = true;
     setLoading(true);
     try {
       const res = await RecipesAPI.list();
-      setRecipes(res.recipes || []);
+      setRecipes(((res as any).recipes || []) as RecipeItem[]);
     } catch (_) {
-      // ignore fetch errors
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
     }
   }, [user]);
 
-  // Fetch recipes whenever the authenticated user changes
   useEffect(() => {
     if (!user) {
       setRecipes([]);
@@ -53,9 +67,7 @@ export function RecipesProvider({ children }) {
     refetch();
   }, [user, refetch]);
 
-  // No persistence side-effect
-
-  const addRecipe = useCallback(async (recipe) => {
+  const addRecipe = useCallback(async (recipe: { title: string; ingredients: string[]; steps: string }) => {
     try {
       const payload = {
         title: recipe.title,
@@ -66,14 +78,14 @@ export function RecipesProvider({ children }) {
           .map((s) => s.trim())
           .filter(Boolean),
       };
-      await RecipesAPI.create(payload);
+      await RecipesAPI.create(payload as any);
       await refetch();
     } catch (err) {
-      throw err;
+      throw err as Error;
     }
   }, [refetch]);
 
-  const updateRecipe = useCallback(async (id, updates) => {
+  const updateRecipe = useCallback(async (id: string, updates: { title: string; ingredients: string[]; steps: string }) => {
     try {
       const payload = {
         title: updates.title,
@@ -84,19 +96,19 @@ export function RecipesProvider({ children }) {
           .map((s) => s.trim())
           .filter(Boolean),
       };
-      await RecipesAPI.update(id, payload);
+      await RecipesAPI.update(id, payload as any);
       await refetch();
     } catch (err) {
-      throw err;
+      throw err as Error;
     }
   }, [refetch]);
 
-  const deleteRecipe = useCallback(async (id) => {
+  const deleteRecipe = useCallback(async (id: string) => {
     try {
       await RecipesAPI.remove(id);
       await refetch();
     } catch (err) {
-      throw err;
+      throw err as Error;
     }
   }, [refetch]);
 

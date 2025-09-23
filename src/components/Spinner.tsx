@@ -1,7 +1,7 @@
 "use client";
 
-export default function Spinner({ size = 20, className = "" }) {
-  const style = { width: size, height: size };
+export default function Spinner({ size = 20, className = "" }: { size?: number; className?: string }) {
+  const style = { width: size, height: size } as const;
   return (
     <span
       role="status"

@@ -11,6 +11,7 @@ import TabNavigation from "../../components/TabNavigation";
 import FormModal from "../../components/FormModal";
 import InputChips from "../../components/InputChips";
 import RecipeCard from "../../components/RecipeCard";
+import { Github, Linkedin } from "lucide-react";
 
 const tabs = [
   { key: "recipes", label: "My Recipes" },
@@ -25,20 +26,20 @@ export default function AppPage() {
 
   const [current, setCurrent] = useState("recipes");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState<any>(null);
 
   const [formTitle, setFormTitle] = useState("");
-  const [formIngredients, setFormIngredients] = useState([]);
+  const [formIngredients, setFormIngredients] = useState<string[]>([]);
   const [formSteps, setFormSteps] = useState("");
-  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  const [aiInput, setAiInput] = useState([]);
+  const [aiInput, setAiInput] = useState<string[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiResult, setAiResult] = useState(null);
+  const [aiResult, setAiResult] = useState<any>(null);
 
-  const [planPrefs, setPlanPrefs] = useState({ days: 5, calories: 2000, diet: "Balanced" });
+  const [planPrefs, setPlanPrefs] = useState({ days: 5 as number | string, calories: 2000 as number | string, diet: "Balanced" });
   const [planLoading, setPlanLoading] = useState(false);
-  const [planResult, setPlanResult] = useState(null);
+  const [planResult, setPlanResult] = useState<string[] | null>(null);
   const [refetchingAfterDelete, setRefetchingAfterDelete] = useState(false);
 
   useEffect(() => {
@@ -53,11 +54,11 @@ export default function AppPage() {
     setModalOpen(true);
   }
 
-  function openEdit(recipe) {
+  function openEdit(recipe: any) {
     setEditing(recipe);
     setFormTitle(recipe.title || "");
     const ing = Array.isArray(recipe.ingredients)
-      ? recipe.ingredients.map((i) => (typeof i === "string" ? i : i.name))
+      ? recipe.ingredients.map((i: any) => (typeof i === "string" ? i : i.name))
       : [];
     setFormIngredients(ing);
     const steps = Array.isArray(recipe.steps) ? recipe.steps.join("\n") : recipe.steps || "";
@@ -65,7 +66,7 @@ export default function AppPage() {
     setModalOpen(true);
   }
 
-  async function saveRecipe(e) {
+  async function saveRecipe(e: React.FormEvent) {
     e.preventDefault();
     try {
       setActionLoadingId(editing ? (editing._id || editing.id) : "new");
@@ -75,7 +76,7 @@ export default function AppPage() {
         await addRecipe({ title: formTitle, ingredients: formIngredients, steps: formSteps });
       }
       setModalOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       const msg = err?.data?.error || err?.data?.msg || err?.message || "Something went wrong";
       if (typeof window !== "undefined") alert(msg);
       setModalOpen(false);
@@ -85,7 +86,6 @@ export default function AppPage() {
     }
   }
 
-  // Track refetching state specifically after delete to show alternate skeleton
   useEffect(() => {
     if (!recipesLoading && refetchingAfterDelete) {
       setRefetchingAfterDelete(false);
@@ -95,11 +95,9 @@ export default function AppPage() {
   async function generateAiRecipe() {
     setAiLoading(true);
     try {
-      const res = await AiAPI.suggest(aiInput);
-      // Backend returns text. Show it simply for now.
-      setAiResult({ title: "AI Suggestions", ingredients: aiInput, steps: res.suggestions });
+      const res = await AiAPI.suggest(aiInput as any);
+      setAiResult({ title: "AI Suggestions", ingredients: aiInput, steps: (res as any).suggestions });
     } catch (err) {
-      // handle silently or add inline error UI
     } finally {
       setAiLoading(false);
     }
@@ -109,29 +107,29 @@ export default function AppPage() {
     setPlanLoading(true);
     try {
       const res = await AiAPI.mealPlan({ days: Number(planPrefs.days) || 5, preferences: `${planPrefs.diet}, ${planPrefs.calories} kcal` });
-      setPlanResult(String(res.mealPlan || "").split("\n").filter(Boolean));
+      setPlanResult(String((res as any).mealPlan || "").split("\n").filter(Boolean));
     } catch (err) {
-      // handle silently or add inline error UI
     } finally {
       setPlanLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: "linear-gradient(180deg, #FFF7F7 0%, #FFFDF5 100%)" }}>
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <Logo />
-          <button onClick={logout} className="text-sm underline" style={{ color: "#6b4a52" }}>Log out</button>
-        </div>
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, #FFF7F7 0%, #FFFDF5 100%)" }}>
+      <div className="flex-1 p-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <Logo />
+            <button onClick={logout} className="text-sm underline" style={{ color: "#6b4a52" }}>Log out</button>
+          </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <TabNavigation tabs={tabs} current={current} onChange={setCurrent} />
-          {current === "recipes" ? (
+          {current === "recipes" && recipes?.length>0 && (
             <div className="flex justify-end">
               <button onClick={openCreate} className="w-full sm:w-auto px-4 py-2 rounded-lg font-medium" style={{ background: "#B7EDC8", color: "#1f3a2c" }}>Add Recipe</button>
             </div>
-          ) : null}
+          ) }
         </div>
 
         {current === "recipes" ? (
@@ -140,7 +138,7 @@ export default function AppPage() {
               ? Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="animate-pulse h-52 rounded-2xl" style={{ background: "#fff", border: "1px solid #ffe0e0" }} />
                 ))
-              : recipes.map((r) => (
+              : recipes?.map((r: any) => (
                   <RecipeCard
                     key={r._id || r.id}
                     recipe={r}
@@ -151,7 +149,7 @@ export default function AppPage() {
                       try {
                         setRefetchingAfterDelete(true);
                         await deleteRecipe(rec._id || rec.id);
-                      } catch (err) {
+                      } catch (err: any) {
                         const msg = err?.data?.error || err?.data?.msg || err?.message || "Failed to delete";
                         if (typeof window !== "undefined") alert(msg);
                       } finally {
@@ -187,7 +185,7 @@ export default function AppPage() {
                 {aiLoading ? "Generating..." : "Generate Recipe"}
               </button>
             </div>
-            <div className="rounded-2xl p-6" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
+            <div className="rounded-2xl p-6 h-[500px] overflow-y-auto scrollbar-hide" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
               <h3 className="font-semibold mb-2" style={{ color: "#333" }}>AI Output</h3>
               {aiLoading ? (
                 <div className="animate-pulse h-40 rounded-xl" style={{ background: "#FFF7F7" }} />
@@ -209,20 +207,21 @@ export default function AppPage() {
               <h3 className="font-semibold" style={{ color: "#333" }}>Preferences</h3>
               <div>
                 <label className="block text-sm mb-1" style={{ color: "#555" }}>Diet</label>
-                <input className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={planPrefs.diet} onChange={(e) => setPlanPrefs({ ...planPrefs, diet: e.target.value })} />
+                <input className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={String(planPrefs.diet)} onChange={(e) => setPlanPrefs({ ...planPrefs, diet: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm mb-1" style={{ color: "#555" }}>Days</label>
-                  <input type="number" className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={planPrefs.days} onChange={(e) => setPlanPrefs({ ...planPrefs, days: e.target.value })} />
+                  <input type="number" className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={Number(planPrefs.days)} onChange={(e) => setPlanPrefs({ ...planPrefs, days: e.target.value })} />
                 </div>
               </div>
               <button onClick={generatePlan} disabled={planLoading} className="px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2" style={{ background: "#FFE28C", color: "#4a3e1f" }}>
                 {planLoading ? <Spinner size={16} /> : null}
                 {planLoading ? "Generating..." : "Generate Plan"}
               </button>
+             {planLoading && <p className="block text-sm mb-1" style={{ color: "#555" }}>This might take 1-2 minutes</p>}
             </div>
-            <div className="rounded-2xl p-6" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
+            <div className="rounded-2xl p-6 h-[500px] overflow-y-auto scrollbar-hide" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
               <h3 className="font-semibold mb-2" style={{ color: "#333" }}>Meal Plan</h3>
               {planLoading ? (
                 <div className="space-y-2">
@@ -234,7 +233,6 @@ export default function AppPage() {
                 <pre className="text-sm whitespace-pre-wrap" style={{ color: "#6b4a52" }}>{planResult.join("\n")}</pre>
               ) : (
                 <div className="text-sm space-y-3" style={{ color: "#6b4a52" }}>
-                  <div className="mx-auto w-24 h-24 rounded-full" style={{ background: "#FFE8EF" }} />
                   <div>No plan available yet. Try generating one!</div>
                 </div>
               )}
@@ -267,6 +265,28 @@ export default function AppPage() {
           </div>
         </form>
       </FormModal>
+      </div>
+      <footer className="w-full text-xs pb-4 text-gray-600 flex items-center justify-center gap-4">
+        <span>© {new Date().getFullYear()} Kulsoom Rasheed</span>
+        <a
+          href="https://github.com/kulsoomrasheed"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Kulsoom Rasheed GitHub profile"
+          className="inline-flex items-center gap-1 hover:text-gray-800"
+        >
+          <Github size={16} /> GitHub
+        </a>
+        <a
+          href="https://www.linkedin.com/in/kulsoom-rasheed-a5b5a0278/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Kulsoom Rasheed LinkedIn profile"
+          className="inline-flex items-center gap-1 hover:text-gray-800"
+        >
+          <Linkedin size={16} /> LinkedIn
+        </a>
+      </footer>
     </div>
   );
 }

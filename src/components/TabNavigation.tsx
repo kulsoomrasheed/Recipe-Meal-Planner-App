@@ -1,6 +1,8 @@
 "use client";
 
-export default function TabNavigation({ tabs, current, onChange }) {
+export interface TabItem { key: string; label: string }
+
+export default function TabNavigation({ tabs, current, onChange }: { tabs: TabItem[]; current: string; onChange: (key: string) => void }) {
   return (
     <div className="flex gap-2 p-1 rounded-xl" style={{ background: "#fff2f7", border: "1px solid #ffd6e5" }}>
       {tabs.map((tab) => {
