@@ -216,10 +216,6 @@ export default function AppPage() {
                   <label className="block text-sm mb-1" style={{ color: "#555" }}>Days</label>
                   <input type="number" className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={planPrefs.days} onChange={(e) => setPlanPrefs({ ...planPrefs, days: e.target.value })} />
                 </div>
-                <div>
-                  <label className="block text-sm mb-1" style={{ color: "#555" }}>Calories</label>
-                  <input type="number" className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={planPrefs.calories} onChange={(e) => setPlanPrefs({ ...planPrefs, calories: e.target.value })} />
-                </div>
               </div>
               <button onClick={generatePlan} disabled={planLoading} className="px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2" style={{ background: "#FFE28C", color: "#4a3e1f" }}>
                 {planLoading ? <Spinner size={16} /> : null}

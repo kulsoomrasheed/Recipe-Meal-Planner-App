@@ -16,7 +16,16 @@ export default function RecipeCard({ recipe, onEdit, onDelete, busy = false }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="font-semibold" style={{ color: "#333" }}>{recipe.title}</h3>
-            <p className="text-sm mt-1" style={{ color: "#6b4a52" }}>{recipe.ingredients?.slice(0, 3).join(", ")}{recipe.ingredients?.length > 3 ? "…" : ""}</p>
+            <p className="text-sm mt-1" style={{ color: "#6b4a52" }}>
+              {Array.isArray(recipe.ingredients)
+                ? recipe.ingredients
+                    .slice(0, 3)
+                    .map((ing) => (typeof ing === "string" ? ing : ing?.name))
+                    .filter(Boolean)
+                    .join(", ")
+                : ""}
+              {Array.isArray(recipe.ingredients) && recipe.ingredients.length > 3 ? "…" : ""}
+            </p>
           </div>
           <div className="flex gap-2 items-center">
             {busy ? (
