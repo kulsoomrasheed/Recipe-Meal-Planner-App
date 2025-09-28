@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { useRecipes } from "../../context/RecipesContext";
@@ -12,6 +12,7 @@ import FormModal from "../../components/FormModal";
 import InputChips from "../../components/InputChips";
 import RecipeCard from "../../components/RecipeCard";
 import { Github, Linkedin } from "lucide-react";
+import { toast } from "sonner";
 
 const tabs = [
   { key: "recipes", label: "My Recipes" },
@@ -32,6 +33,8 @@ export default function AppPage() {
   const [formIngredients, setFormIngredients] = useState<string[]>([]);
   const [formSteps, setFormSteps] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const chipsRef = useRef<HTMLDivElement | null>(null);
+  const aiChipsRef = useRef<HTMLDivElement | null>(null);
 
   const [aiInput, setAiInput] = useState<string[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
@@ -68,17 +71,33 @@ export default function AppPage() {
 
   async function saveRecipe(e: React.FormEvent) {
     e.preventDefault();
+    // Merge any pending, not-yet-entered ingredient from the InputChips input
+    const pendingInput = (chipsRef.current?.querySelector('input') as HTMLInputElement | null)?.value?.trim() || "";
+    const mergedIngredients = Array.from(new Set([...
+      (formIngredients || []),
+      ...(pendingInput ? [pendingInput] : [])
+    ]));
+
+    // Block submission if no ingredients are provided
+    if (mergedIngredients.length === 0) {
+      toast.warning("Please add at least one ingredient.");
+      return;
+    }
+
+
     try {
       setActionLoadingId(editing ? (editing._id || editing.id) : "new");
       if (editing) {
-        await updateRecipe(editing._id || editing.id, { title: formTitle, ingredients: formIngredients, steps: formSteps });
+        await updateRecipe(editing._id || editing.id, { title: formTitle, ingredients: mergedIngredients, steps: formSteps });
+        toast.success("Recipe updated successfully!");
       } else {
-        await addRecipe({ title: formTitle, ingredients: formIngredients, steps: formSteps });
+        await addRecipe({ title: formTitle, ingredients: mergedIngredients, steps: formSteps });
+        toast.success("Recipe added successfully!");
       }
       setModalOpen(false);
     } catch (err: any) {
       const msg = err?.data?.error || err?.data?.msg || err?.message || "Something went wrong";
-      if (typeof window !== "undefined") alert(msg);
+      if (typeof window !== "undefined") toast.error(msg);
       setModalOpen(false);
     }
     finally {
@@ -93,22 +112,64 @@ export default function AppPage() {
   }, [recipesLoading, refetchingAfterDelete]);
 
   async function generateAiRecipe() {
+    if (aiLoading) return;
+
+    // Merge any pending, not-yet-entered ingredient from the InputChips input
+    const pendingInput = (aiChipsRef.current?.querySelector('input') as HTMLInputElement | null)?.value?.trim() || "";
+    const mergedIngredients = Array.from(new Set([...
+      (aiInput || []),
+      ...(pendingInput ? [pendingInput] : [])
+    ]));
+
+    // Validation: must have at least one ingredient
+    if (mergedIngredients.length === 0) {
+      toast.warning("Please add at least one ingredient for AI suggestions.");
+      return;
+    }
+
+    // Reflect merged state in UI and clear the pending input box so it's not duplicated
+    setAiInput(mergedIngredients);
+    if (pendingInput) {
+      const inputEl = aiChipsRef.current?.querySelector('input') as HTMLInputElement | null;
+      if (inputEl) inputEl.value = "";
+    }
+
     setAiLoading(true);
     try {
-      const res = await AiAPI.suggest(aiInput as any);
-      setAiResult({ title: "AI Suggestions", ingredients: aiInput, steps: (res as any).suggestions });
-    } catch (err) {
+      const res = await AiAPI.suggest(mergedIngredients as any);
+      setAiResult({ title: "AI Suggestions", ingredients: mergedIngredients, steps: (res as any).suggestions });
+      toast.success("AI recipe suggestions generated successfully!");
+    } catch (err: any) {
+      const errorMsg = err?.data?.error || err?.data?.msg || err?.message || "Failed to generate AI suggestions. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setAiLoading(false);
     }
   }
 
   async function generatePlan() {
+    if (planLoading) return;
+
+    // Basic validation
+    const daysNum = Number(planPrefs.days);
+    const dietStr = String(planPrefs.diet || "").trim();
+    if (!dietStr) {
+      toast.warning("Please provide a diet preference (e.g., Balanced, Vegetarian).");
+      return;
+    }
+    if (!Number.isFinite(daysNum) || daysNum < 1) {
+      toast.warning("Please enter a valid number of days (at least 1).");
+      return;
+    }
+
     setPlanLoading(true);
     try {
-      const res = await AiAPI.mealPlan({ days: Number(planPrefs.days) || 5, preferences: `${planPrefs.diet}, ${planPrefs.calories} kcal` });
+      const res = await AiAPI.mealPlan({ days: daysNum, preferences: `${dietStr}, ${planPrefs.calories} kcal` });
       setPlanResult(String((res as any).mealPlan || "").split("\n").filter(Boolean));
-    } catch (err) {
+      toast.success("Meal plan generated successfully!");
+    } catch (err: any) {
+      const errorMsg = err?.data?.error || err?.data?.msg || err?.message || "Failed to generate meal plan. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setPlanLoading(false);
     }
@@ -138,7 +199,9 @@ export default function AppPage() {
               ? Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="animate-pulse h-52 rounded-2xl" style={{ background: "#fff", border: "1px solid #ffe0e0" }} />
                 ))
-              : recipes?.map((r: any) => (
+              : recipes?.slice() // make a shallow copy so original isn't mutated
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // newest first
+              .map((r: any) => (
                   <RecipeCard
                     key={r._id || r.id}
                     recipe={r}
@@ -149,9 +212,10 @@ export default function AppPage() {
                       try {
                         setRefetchingAfterDelete(true);
                         await deleteRecipe(rec._id || rec.id);
+                        toast.success("Recipe deleted successfully!");
                       } catch (err: any) {
                         const msg = err?.data?.error || err?.data?.msg || err?.message || "Failed to delete";
-                        if (typeof window !== "undefined") alert(msg);
+                        if (typeof window !== "undefined") toast.error(msg);
                       } finally {
                         setActionLoadingId(null);
                       }
@@ -179,11 +243,14 @@ export default function AppPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="rounded-2xl p-6" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
               <h3 className="font-semibold mb-2" style={{ color: "#333" }}>Ingredients</h3>
-              <InputChips value={aiInput} onChange={setAiInput} />
+              <div ref={aiChipsRef}>
+                <InputChips value={aiInput} onChange={setAiInput} />
+              </div>
               <button onClick={generateAiRecipe} disabled={aiLoading} className="mt-4 px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2" style={{ background: "#FFB3C7", color: "#40282c" }}>
                 {aiLoading ? <Spinner size={16} /> : null}
                 {aiLoading ? "Generating..." : "Generate Recipe"}
               </button>
+               {aiLoading && <p className=" text-xs mt-3" style={{ color: "#555" }}>This might take 1-2 minutes</p>}
             </div>
             <div className="rounded-2xl p-6 h-[500px] overflow-y-auto scrollbar-hide" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
               <h3 className="font-semibold mb-2" style={{ color: "#333" }}>AI Output</h3>
@@ -195,7 +262,7 @@ export default function AppPage() {
                   <p className="text-sm mt-2 whitespace-pre-wrap" style={{ color: "#6b4a52" }}>{aiResult.steps}</p>
                 </div>
               ) : (
-                <p className="text-sm" style={{ color: "#6b4a52" }}>Your recipe will appear here.</p>
+                <p className="text-sm" style={{ color: "#6b4a52" }}>Your AI recipes will appear here.✨</p>
               )}
             </div>
           </div>
@@ -219,7 +286,7 @@ export default function AppPage() {
                 {planLoading ? <Spinner size={16} /> : null}
                 {planLoading ? "Generating..." : "Generate Plan"}
               </button>
-             {planLoading && <p className="block text-sm mb-1" style={{ color: "#555" }}>This might take 1-2 minutes</p>}
+             {planLoading && <p className=" text-xs " style={{ color: "#555" }}>This might take 2-3 minutes</p>}
             </div>
             <div className="rounded-2xl p-6 h-[500px] overflow-y-auto scrollbar-hide" style={{ background: "#fff", border: "1px solid #ffe0e0" }}>
               <h3 className="font-semibold mb-2" style={{ color: "#333" }}>Meal Plan</h3>
@@ -233,7 +300,7 @@ export default function AppPage() {
                 <pre className="text-sm whitespace-pre-wrap" style={{ color: "#6b4a52" }}>{planResult.join("\n")}</pre>
               ) : (
                 <div className="text-sm space-y-3" style={{ color: "#6b4a52" }}>
-                  <div>No plan available yet. Try generating one!</div>
+                  <div>No meal plan yet. Try generating one!✨</div>
                 </div>
               )}
             </div>
@@ -248,12 +315,17 @@ export default function AppPage() {
             <input className="w-full rounded-lg border p-3 outline-none" style={{ borderColor: "#ffd6e0" }} value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm mb-1" style={{ color: "#555" }}>Ingredients</label>
-            <InputChips value={formIngredients} onChange={setFormIngredients} placeholder="Add ingredient and press Enter" />
+            <label className="block text-sm mb-1" style={{ color: "#555" }}>Ingredients <span className="text-red-500">*</span></label>
+            <div ref={chipsRef} aria-required="true" role="group">
+              <InputChips value={formIngredients} onChange={setFormIngredients} placeholder="Add ingredient and press Enter" />
+            </div>
+            {!formIngredients.length && (
+    <p className="text-red-500 text-sm mt-1">At least one ingredient is required</p>
+  )}
           </div>
           <div>
             <label className="block text-sm mb-1" style={{ color: "#555" }}>Steps</label>
-            <textarea className="w-full rounded-lg border p-3 outline-none min-h-24" style={{ borderColor: "#ffd6e0" }} value={formSteps} onChange={(e) => setFormSteps(e.target.value)} />
+            <textarea className="w-full rounded-lg border p-3 outline-none min-h-24" style={{ borderColor: "#ffd6e0" }} value={formSteps} onChange={(e) => setFormSteps(e.target.value)} required/>
           </div>
           
           <div className="flex justify-end gap-2 pt-2">

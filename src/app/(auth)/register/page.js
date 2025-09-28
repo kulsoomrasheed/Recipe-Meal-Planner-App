@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { Utensils, Github, Linkedin } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,27 +25,37 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     if (!username || username.trim().length < 3) {
-      setError("Username must be at least 3 characters");
+      const errorMsg = "Username must be at least 3 characters";
+      setError(errorMsg);
+      toast.warning(errorMsg);
       return;
     }
     if (!isValidEmail(email)) {
-      setError("Please enter a valid email address");
+      const errorMsg = "Please enter a valid email address";
+      setError(errorMsg);
+      toast.warning(errorMsg);
       return;
     }   if (!password || password.length < 6) {
-      setError("Password must be at least 6 characters");
+      const errorMsg = "Password must be at least 6 characters";
+      setError(errorMsg);
+      toast.warning(errorMsg);
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match");
+      const errorMsg = "Passwords do not match";
+      setError(errorMsg);
+      toast.warning(errorMsg);
       return;
     }
     setLoading(true);
     try {
       await register(username, email, password);
+      toast.success("Registration successful! Welcome to RecipeAi!");
       router.push("/app");
     } catch (err) {
       const msg = err?.data?.error || err?.data?.msg || err?.message || "Registration failed. Please try again.";
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -62,7 +73,7 @@ export default function RegisterPage() {
           </div>
 
           <h2 className="text-xl mb-2" style={{ color: "#444" }}>Create your account</h2>
-          <p className="text-sm mb-6" style={{ color: "#666" }}>Start saving recipes and get AI suggestions.</p>
+          <p className="text-sm mb-6" style={{ color: "#666" }}>Start saving recipes, exploring AI suggestions, and planning meals effortlessly.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

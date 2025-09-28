@@ -1,4 +1,5 @@
 // import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import AppProviders from "./providers";
 import { Inter, Roboto } from "next/font/google";
@@ -25,6 +26,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AppProviders>
           <div className="app-scroll">
             {children}
+            <Toaster position="top-right" richColors />
+
           </div>
         </AppProviders>
       </body>

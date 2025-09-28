@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { ChefHat, Github, Linkedin } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,10 +21,13 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(username, password);
+      toast.success("Login successful! Welcome back!");
       router.push("/app");
     } catch (err) {
       // console.log(err,'err');
-      setError(err.message);
+      const errorMsg = err.message || "Login failed. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -41,7 +45,7 @@ export default function LoginPage() {
           </div>
 
           <h2 className="text-xl mb-2" style={{ color: "#444" }}>Welcome back</h2>
-          <p className="text-sm mb-6" style={{ color: "#666" }}>Log in to manage recipes and get AI ideas.</p>
+          <p className="text-sm mb-6" style={{ color: "#666" }}>Log in to manage recipes, get AI-powered suggestions, and generate personalized meal plans.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
