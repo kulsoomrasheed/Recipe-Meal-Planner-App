@@ -15,18 +15,6 @@ export type RecipeItem = {
   updatedAt?: number;
 };
 
-export function createEmptyRecipe(): RecipeItem {
-  return {
-    id: crypto.randomUUID(),
-    title: "",
-    ingredients: [],
-    steps: [],
-    imageUrl: "",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-}
-
 type RecipesContextValue = {
   recipes: RecipeItem[];
   loading: boolean;

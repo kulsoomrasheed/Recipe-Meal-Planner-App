@@ -10,6 +10,7 @@ const STORAGE_KEY = "recipesai_auth_user";
 type AuthContextValue = {
   user: User;
   isAuthenticated: boolean;
+  isLoading: boolean;
   register: (username: string, email: string, password: string) => Promise<{ id: string; username: string }>;
   login: (username: string, password: string) => Promise<{ id: string; username: string }>;
   logout: () => void;
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = Boolean(user);
 
   useEffect(() => {
@@ -34,6 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (raw) setUser(JSON.parse(raw));
       }
     } catch (_) {}
+    finally{
+      setIsLoading(false)
+    }
   }, []);
 
   useEffect(() => {
@@ -83,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, isAuthenticated, register, login, logout }),
-    [user, isAuthenticated, register, login, logout]
+    () => ({ user, isAuthenticated, register, login, logout,isLoading }),
+    [user, isAuthenticated, register, login, logout,isLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
