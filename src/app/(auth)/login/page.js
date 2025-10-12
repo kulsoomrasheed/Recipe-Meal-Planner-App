@@ -3,35 +3,37 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "../../../context/AuthContext";
+import {  useAuthentication } from "../../../context/AuthContext";
 import { ChefHat, Github, Linkedin } from "lucide-react";
 import { toast } from "sonner";
+import { useClerk } from "@clerk/nextjs";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+//   const { login, isAuthenticated } = useAuthentication();
+//   const [username, setUsername] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState("");
+  const { openSignIn } = useClerk();
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await login(username, password);
-      toast.success("Login successful! Welcome back!");
-      router.push("/app");
-    } catch (err) {
-      // console.log(err,'err');
-      const errorMsg = err.message || "Login failed. Please try again.";
-      setError(errorMsg);
-      toast.error(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  }
+//   async function handleSubmit(e) {
+//     e.preventDefault();
+//     setError("");
+//     setLoading(true);
+//     try {
+//       await login(username, password);
+//       toast.success("Login successful! Welcome back!");
+//       router.push("/app");
+//     } catch (err) {
+//       // console.log(err,'err');
+//       const errorMsg = err.message || "Login failed. Please try again.";
+//       setError(errorMsg);
+//       toast.error(errorMsg);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, #FFF7F7 0%, #FFFDF5 100%)" }}>
@@ -46,7 +48,7 @@ export default function LoginPage() {
 
           <h2 className="text-xl mb-2" style={{ color: "#444" }}>Welcome back</h2>
           <p className="text-sm mb-6" style={{ color: "#666" }}>Log in to manage recipes, get AI-powered suggestions, and generate personalized meal plans.</p>
-
+{/* 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm mb-1" style={{ color: "#555" }}>Username</label>
@@ -83,11 +85,17 @@ export default function LoginPage() {
             >
               {loading ? "Logging in..." : "Log in"}
             </button>
-          </form>
-
-          <p className="text-sm mt-4 text-center" style={{ color: "#666" }}>
+          </form> */}
+  <button
+            onClick={() => openSignIn({ redirectUrl: "/app" })}
+            className="w-full rounded-lg p-3 font-medium transition"
+            style={{ background: "#FFB3C7", color: "#40282c" }}
+          >
+            Continue with Login
+          </button>
+          {/* <p className="text-sm mt-4 text-center" style={{ color: "#666" }}>
             No account? <Link className="underline" href="/register">Register</Link>
-          </p>
+          </p> */}
         </div>
       </div>
       <footer className="w-full py-4 text-xs text-gray-600 flex items-center justify-center gap-4">
@@ -114,5 +122,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-

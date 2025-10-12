@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
-import { useAuth } from "./AuthContext";
+import { useAuthentication } from "./AuthContext";
 import { getStoredToken, RecipesAPI } from "../lib/api";
 
 export type RecipeItem = {
@@ -30,7 +30,7 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
   const [recipes, setRecipes] = useState<RecipeItem[]>([]);
   const [loading, setLoading] = useState(false);
   const isFetchingRef = useRef(false);
-  const { user } = useAuth();
+  const { user } = useAuthentication();
 
   const refetch = useCallback(async () => {
     if (isFetchingRef.current) return;
@@ -56,6 +56,7 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
   }, [user, refetch]);
 
   const addRecipe = useCallback(async (recipe: { title: string; ingredients: string[]; steps: string }) => {
+    
     try {
       const payload = {
         title: recipe.title,

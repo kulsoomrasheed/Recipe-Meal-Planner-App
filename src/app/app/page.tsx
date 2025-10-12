@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthentication } from "../../context/AuthContext";
 import { useRecipes } from "../../context/RecipesContext";
 import { AiAPI } from "../../lib/api";
 import Logo from "../../components/Logo";
@@ -13,6 +13,7 @@ import InputChips from "../../components/InputChips";
 import RecipeCard from "../../components/RecipeCard";
 import { Github, Linkedin } from "lucide-react";
 import { toast } from "sonner";
+import { UserButton } from "@clerk/nextjs";
 
 const tabs = [
   { key: "recipes", label: "My Recipes" },
@@ -22,7 +23,8 @@ const tabs = [
 
 export default function AppPage() {
   const router = useRouter();
-  const { isAuthenticated, logout, isLoading: isAuthLoading } = useAuth();
+  // const { isAuthenticated, logout, isLoading: isAuthLoading } = useAuth();
+  const { user } = useAuthentication();
   const {
     recipes,
     loading: recipesLoading,
@@ -55,9 +57,9 @@ export default function AppPage() {
   const [planResult, setPlanResult] = useState<string[] | null>(null);
   const [refetchingAfterDelete, setRefetchingAfterDelete] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated && !isAuthLoading) router.replace("/login");
-  }, [isAuthenticated, router, isAuthLoading]);
+  // useEffect(() => {
+  //   if (!isAuthenticated && !isAuthLoading) router.replace("/login");
+  // }, [isAuthenticated, router, isAuthLoading]);
 
   function openCreate() {
     setEditing(null);
@@ -186,27 +188,6 @@ export default function AppPage() {
     }
   }
 
-  //  async function generateAiRecipeFromIngredients(ingredients: string[]) {
-  //   if (!ingredients || ingredients.length === 0) {
-  //     toast.warning("Please add at least one ingredient for AI suggestions.");
-  //     return null;
-  //   }
-
-  //   try {
-  //     const res = await AiAPI.suggest(ingredients as any);
-  //     toast.success("AI recipe steps generated successfully!");
-  //     return (res as any).suggestions;
-  //   } catch (err: any) {
-  //     const errorMsg =
-  //       err?.data?.error ||
-  //       err?.data?.msg ||
-  //       err?.message ||
-  //       "Failed to generate AI suggestions. Please try again.";
-  //     toast.error(errorMsg);
-  //     return null;
-  //   }
-  // }
-
   async function generatePlan() {
     if (planLoading) return;
 
@@ -283,17 +264,17 @@ export default function AppPage() {
     >
       <div className="flex-1 p-4">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+        {user &&  <div className="flex items-center justify-between mb-6">
             <Logo />
             <button
-              onClick={logout}
+              // onClick={logout}
               className="text-sm underline"
               style={{ color: "#6b4a52" }}
             >
-              Log out
+            <UserButton/>
             </button>
           </div>
-
+}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
             <TabNavigation
               tabs={tabs}
@@ -407,7 +388,7 @@ export default function AppPage() {
                   <InputChips value={aiInput} onChange={setAiInput} />
                 </div>
                 <button
-                  onClick={generateAiStepsForForm}
+                  onClick={generateAiRecipe}
                   disabled={aiLoading}
                   className="mt-4 px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2"
                   style={{ background: "#FFB3C7", color: "#40282c" }}

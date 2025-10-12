@@ -4,6 +4,7 @@ import "./globals.css";
 import AppProviders from "./providers";
 import { Inter, Roboto } from "next/font/google";
 import { ReactNode } from "react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -21,18 +22,17 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${roboto.className} antialiased`}>
-        <AppProviders>
-          <div className="app-scroll">
-            {children}
-            <Toaster position="top-right" richColors />
-
-          </div>
-        </AppProviders>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${roboto.className} antialiased`}>
+          <AppProviders>
+            <div className="app-scroll">
+              {children}
+              <Toaster position="top-right" richColors />
+            </div>
+          </AppProviders>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
-
-
