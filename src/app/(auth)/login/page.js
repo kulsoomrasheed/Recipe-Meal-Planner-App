@@ -6,16 +6,22 @@ import { useState } from "react";
 import {  useAuthentication } from "../../../context/AuthContext";
 import { ChefHat, Github, Linkedin } from "lucide-react";
 import { toast } from "sonner";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { user } = useUser();
 //   const { login, isAuthenticated } = useAuthentication();
 //   const [username, setUsername] = useState("");
 //   const [password, setPassword] = useState("");
 //   const [loading, setLoading] = useState(false);
 //   const [error, setError] = useState("");
   const { openSignIn } = useClerk();
+
+  if (user) {
+    // Redirect to your app if already logged in
+    if (typeof window !== "undefined") window.location.href = "/app";
+    return null;
+  }
 
 //   async function handleSubmit(e) {
 //     e.preventDefault();

@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { useAuthentication } from "./AuthContext";
-import { getStoredToken, RecipesAPI } from "../lib/api";
+import {  RecipesAPI } from "../lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 export type RecipeItem = {
   _id?: string;
@@ -31,21 +32,23 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const isFetchingRef = useRef(false);
   const { user } = useAuthentication();
+  const { getToken } = useAuth();
 
   const refetch = useCallback(async () => {
     if (isFetchingRef.current) return;
-    if (!user || !getStoredToken()) return;
+    const token=await getToken()
+    if (!user || !token) return;
     isFetchingRef.current = true;
     setLoading(true);
     try {
-      const res = await RecipesAPI.list();
+    const res = await RecipesAPI.list(token); // 👈 pass it here
       setRecipes(((res as any).recipes || []) as RecipeItem[]);
     } catch (_) {
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [user]);
+  }, [user,getToken]);
 
   useEffect(() => {
     if (!user) {
@@ -56,7 +59,8 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
   }, [user, refetch]);
 
   const addRecipe = useCallback(async (recipe: { title: string; ingredients: string[]; steps: string }) => {
-    
+        const token=await getToken()
+
     try {
       const payload = {
         title: recipe.title,
@@ -67,14 +71,16 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
           .map((s) => s.trim())
           .filter(Boolean),
       };
-      await RecipesAPI.create(payload as any);
+      await RecipesAPI.create(payload as any,token);
       await refetch();
     } catch (err) {
       throw err as Error;
     }
-  }, [refetch]);
+  }, [refetch,getToken]);
 
   const updateRecipe = useCallback(async (id: string, updates: { title: string; ingredients: string[]; steps: string }) => {
+        const token=await getToken()
+
     try {
       const payload = {
         title: updates.title,
@@ -85,21 +91,23 @@ export function RecipesProvider({ children }: { children: ReactNode }) {
           .map((s) => s.trim())
           .filter(Boolean),
       };
-      await RecipesAPI.update(id, payload as any);
+      await RecipesAPI.update(id, payload as any,token);
       await refetch();
     } catch (err) {
       throw err as Error;
     }
-  }, [refetch]);
+  }, [refetch,getToken]);
 
   const deleteRecipe = useCallback(async (id: string) => {
+        const token=await getToken()
+
     try {
-      await RecipesAPI.remove(id);
+      await RecipesAPI.remove(id,token);
       await refetch();
     } catch (err) {
       throw err as Error;
     }
-  }, [refetch]);
+  }, [refetch,getToken]);
 
   const value = useMemo(
     () => ({ recipes, loading, addRecipe, updateRecipe, deleteRecipe, refetch }),

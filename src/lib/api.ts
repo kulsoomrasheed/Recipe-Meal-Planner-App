@@ -76,19 +76,20 @@ export const AuthAPI = {
 
 // Recipes APIs
 export const RecipesAPI = {
-  list() {
-    return apiFetch("/recipes/data");
+  list: (token?: string) => {
+    return apiFetch("/recipes", { token });
   },
-  create(payload: any) {
-    return apiFetch("/recipes/data", { method: "POST", body: payload });
+  create: (payload: any, token?: string) => {
+    return apiFetch("/recipes", { method: "POST", body: payload, token });
   },
-  update(id: string, payload: any) {
-    return apiFetch(`/recipes/data/${id}`, { method: "PATCH", body: payload });
+  update: (id: string, payload: any, token?: string) => {
+    return apiFetch(`/recipes/${id}`, { method: "PATCH", body: payload, token });
   },
-  remove(id: string) {
-    return apiFetch(`/recipes/data/${id}`, { method: "DELETE" });
+  remove: (id: string, token?: string) => {
+    return apiFetch(`/recipes/${id}`, { method: "DELETE", token });
   },
 };
+
 
 // AI APIs
 export const AiAPI = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useUser, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -29,7 +30,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // const [user, setUser] = useState<User>(null);
+  const router = useRouter();
   // const [isLoading, setIsLoading] = useState(true);
   // const isAuthenticated = Boolean(user);
   const { user } = useUser();
@@ -44,10 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setStoredToken(token);
         } else {
           toast.warning("User not authorised")
+          router.replace('/login')
         }
       } catch (_) {}
     };
      fetchUserToken()
+       // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // useEffect(() => {

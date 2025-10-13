@@ -32,7 +32,6 @@ export default function AppPage() {
     updateRecipe,
     deleteRecipe,
   } = useRecipes();
-
   const [current, setCurrent] = useState("recipes");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
