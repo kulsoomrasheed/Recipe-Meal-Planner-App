@@ -3,6 +3,8 @@
 import { Pencil, Trash2 } from "lucide-react";
 import Spinner from "./Spinner";
 import Image from "next/image";
+import { useState } from "react";
+import SingleRecipeModal from "./modals/SingleRecipeModal";
 
 export interface RecipeLike {
   _id?: string;
@@ -14,9 +16,12 @@ export interface RecipeLike {
 }
 
 export default function RecipeCard({ recipe, onEdit, onDelete, busy = false }: { recipe: RecipeLike; onEdit?: (r: RecipeLike) => void; onDelete?: (r: RecipeLike) => void; busy?: boolean }) {
+  const [isModalOpen,setIsModalOpen]=useState(false)
   return (
- <div
-  className="rounded-2xl overflow-hidden"
+    <>
+    <div
+ 
+  className="rounded-2xl overflow-hidden cursor-pointer"
   style={{ background: "#fff", border: "1px solid #ffe0e0" }}
 >
 <div className="relative w-full h-40">
@@ -30,7 +35,7 @@ export default function RecipeCard({ recipe, onEdit, onDelete, busy = false }: {
 </div>
 
   <div className="p-4">
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex items-start justify-between gap-3" onClick={()=>setIsModalOpen(true)}>
       <div>
         <h3 className="font-semibold" style={{ color: "#333" }}>
           {recipe.title}
@@ -71,7 +76,10 @@ export default function RecipeCard({ recipe, onEdit, onDelete, busy = false }: {
       </div>
     </div>
   </div>
-</div>
+</div> 
+<SingleRecipeModal isOpen={isModalOpen} onClose={()=>setIsModalOpen(false)} recipeIngredients={recipe.steps}   recipeTitle={recipe.title} />
+    </>
+
 
   );
 }
